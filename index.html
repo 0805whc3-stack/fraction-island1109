@@ -606,9 +606,9 @@
   <!-- 模組視窗 (Modals) -->
   <!-- ============================================== -->
 
-  <!-- 學生登入 / 編輯資料 Modal (優化 mobile RWD 彈出層級與捲動) -->
-  <div id="modal-student" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto hidden">
-    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl max-w-md w-full p-6 relative animate-fade-in my-auto">
+  <!-- 學生登入 / 編輯資料 Modal -->
+  <div id="modal-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl max-w-md w-full p-6 relative animate-fade-in">
       <div class="text-center space-y-2 mb-4">
         <div class="text-4xl">🎒</div>
         <h3 class="text-xl font-black text-sky-900">歡迎來到分數探險島！</h3>
@@ -835,19 +835,15 @@
       if (saved) {
         studentInfo = JSON.parse(saved);
         updateStudentHeader();
+      } else {
+        openStudentLoginModal(true);
       }
-
       checkTabUnlocks();
       renderDetectiveLevel();
       renderLab();
       initChefRound();
       initMatchGame();
       initMonsterGame();
-
-      // 強制在 DOM 與渲染完成後，跨裝置/手機版均跳出學生登入彈窗
-      setTimeout(() => {
-        openStudentLoginModal(true);
-      }, 100);
     }
 
     function updateStudentHeader() {
@@ -939,30 +935,30 @@
       saveProgress();
     }
 
-function switchTab(tabId) {
-  playSound('click');
-  if (!studentInfo.unlockedTabs.includes(tabId)) {
-    alert('🔒 這個關卡尚未解鎖喔！請先在前面的關卡獲得更多星星或完成探索任務！');
-    return;
-  }
-
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById(tabId).classList.remove('hidden');
-
-  const tabs = ['tab-detective', 'tab-lab', 'tab-chef', 'tab-match', 'tab-game'];
-  tabs.forEach(t => {
-    const btn = document.getElementById(`nav-${t.replace('tab-', '')}`);
-    if (t === tabId) {
-      btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-sky-500 text-white border-sky-700 shadow-md";
-    } else {
-      if (studentInfo.unlockedTabs.includes(t)) {
-        btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-white text-slate-700 border-slate-300 hover:bg-slate-50";
-      } else {
-        btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60";
+    function switchTab(tabId) {
+      playSound('click');
+      if (!studentInfo.unlockedTabs.includes(tabId)) {
+        alert('🔒 這個關卡尚未解鎖喔！請先在前面的關卡獲得更多星星或完成探索任務！');
+        return;
       }
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+
+      const tabs = ['tab-detective', 'tab-lab', 'tab-chef', 'tab-match', 'tab-game'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-${t.replace('tab-', '')}`);
+        if (t === tabId) {
+          btn.classList.add('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
+          btn.classList.remove('bg-white', 'text-slate-700');
+        } else {
+          btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
+          if (studentInfo.unlockedTabs.includes(t)) {
+            btn.classList.add('bg-white', 'text-slate-700');
+          }
+        }
+      });
     }
-  });
-}
 
     // ==============================================
     // 分頁一【觀念偵探社】核心邏輯
@@ -1095,17 +1091,23 @@ function switchTab(tabId) {
       const data = detectiveLevels[currentDetLevel];
       const isCorrectOption = (opt === data.correct);
 
+      // 左邊放「大塊色紙」（寬高設為 32，y 座標配合往上提至 104，貼平盤底）
+      leftItem.innerHTML = `
+        <rect x="44" y="104" width="32" height="32" rx="4" fill="#F59E0B" stroke="#D97706" stroke-width="2" />
+        <text x="60" y="125" font-size="10" font-weight="900" fill="#78350F" text-anchor="middle">較大</text>
+      `;
+
+      // 右邊放「小塊色紙」（寬高設為 16，y 座標設為 120，貼平盤底）
+      rightItem.innerHTML = `
+        <rect x="332" y="120" width="16" height="16" rx="3" fill="#F59E0B" stroke="#D97706" stroke-width="2" />
+        <text x="340" y="132" font-size="8" font-weight="900" fill="#78350F" text-anchor="middle">較小</text>
+      `;
+
       if (isCorrectOption) {
-        // 平衡時，左右兩邊放置一模一樣大的塊狀 (20x20)
-        leftItem.innerHTML = `<rect x="40" y="115" width="20" height="20" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
-        rightItem.innerHTML = `<rect x="320" y="115" width="20" height="20" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
         beam.style.transform = 'rotate(0deg)';
         bubble.innerHTML = `✨ <b>切法 (${opt}) 平衡了！</b> 秤盤兩邊的每一塊重量與大小完全一模一樣！屬於真正「等分」！`;
         bubble.className = "mt-3 bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs md:text-sm px-5 py-2 rounded-full shadow-sm text-center max-w-lg transition-all";
       } else {
-        // 傾斜時，左邊沉下去放較大塊 (30x30, 微調x,y置中)，右邊抬高放較小塊 (14x14)
-        leftItem.innerHTML = `<rect x="35" y="105" width="30" height="30" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
-        rightItem.innerHTML = `<rect x="323" y="121" width="14" height="14" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="3"/>`;
         beam.style.transform = 'rotate(-14deg)';
         bubble.innerHTML = `⚠️ <b>切法 (${opt}) 傾斜了！</b> 拿出的兩塊大小不一樣大，所以這不是「等分」喔！`;
         bubble.className = "mt-3 bg-rose-100 border-2 border-rose-400 text-rose-950 font-black text-xs md:text-sm px-5 py-2 rounded-full shadow-sm text-center max-w-lg transition-all";
@@ -1952,11 +1954,6 @@ function switchTab(tabId) {
     window.onload = function() {
       initApp();
     };
-    // 兼顧 mobile 瀏覽器 DOMContentLoaded 生命週期
-    document.addEventListener('DOMContentLoaded', function() {
-      if (!document.getElementById('modal-student').classList.contains('hidden')) return;
-      openStudentLoginModal(true);
-    });
   </script>
 </body>
 </html>
