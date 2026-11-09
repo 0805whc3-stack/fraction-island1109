@@ -939,30 +939,30 @@
       saveProgress();
     }
 
-    function switchTab(tabId) {
-      playSound('click');
-      if (!studentInfo.unlockedTabs.includes(tabId)) {
-        alert('🔒 這個關卡尚未解鎖喔！請先在前面的關卡獲得更多星星或完成探索任務！');
-        return;
+function switchTab(tabId) {
+  playSound('click');
+  if (!studentInfo.unlockedTabs.includes(tabId)) {
+    alert('🔒 這個關卡尚未解鎖喔！請先在前面的關卡獲得更多星星或完成探索任務！');
+    return;
+  }
+
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById(tabId).classList.remove('hidden');
+
+  const tabs = ['tab-detective', 'tab-lab', 'tab-chef', 'tab-match', 'tab-game'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`nav-${t.replace('tab-', '')}`);
+    if (t === tabId) {
+      btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-sky-500 text-white border-sky-700 shadow-md";
+    } else {
+      if (studentInfo.unlockedTabs.includes(t)) {
+        btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-white text-slate-700 border-slate-300 hover:bg-slate-50";
+      } else {
+        btn.className = "tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60";
       }
-
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(tabId).classList.remove('hidden');
-
-      const tabs = ['tab-detective', 'tab-lab', 'tab-chef', 'tab-match', 'tab-game'];
-      tabs.forEach(t => {
-        const btn = document.getElementById(`nav-${t.replace('tab-', '')}`);
-        if (t === tabId) {
-          btn.classList.add('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
-          btn.classList.remove('bg-white', 'text-slate-700');
-        } else {
-          btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
-          if (studentInfo.unlockedTabs.includes(t)) {
-            btn.classList.add('bg-white', 'text-slate-700');
-          }
-        }
-      });
     }
+  });
+}
 
     // ==============================================
     // 分頁一【觀念偵探社】核心邏輯
