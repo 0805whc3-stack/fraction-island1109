@@ -606,9 +606,9 @@
   <!-- 模組視窗 (Modals) -->
   <!-- ============================================== -->
 
-  <!-- 學生登入 / 編輯資料 Modal -->
-  <div id="modal-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl max-w-md w-full p-6 relative animate-fade-in">
+  <!-- 學生登入 / 編輯資料 Modal (優化 mobile RWD 彈出層級與捲動) -->
+  <div id="modal-student" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto hidden">
+    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl max-w-md w-full p-6 relative animate-fade-in my-auto">
       <div class="text-center space-y-2 mb-4">
         <div class="text-4xl">🎒</div>
         <h3 class="text-xl font-black text-sky-900">歡迎來到分數探險島！</h3>
@@ -836,8 +836,6 @@
         studentInfo = JSON.parse(saved);
         updateStudentHeader();
       }
-      // 保持一開啟網頁就先跳出填寫學生資料 Modal（強制填寫）
-      openStudentLoginModal(true);
 
       checkTabUnlocks();
       renderDetectiveLevel();
@@ -845,6 +843,11 @@
       initChefRound();
       initMatchGame();
       initMonsterGame();
+
+      // 強制在 DOM 與渲染完成後，跨裝置/手機版均跳出學生登入彈窗
+      setTimeout(() => {
+        openStudentLoginModal(true);
+      }, 100);
     }
 
     function updateStudentHeader() {
@@ -1949,6 +1952,11 @@
     window.onload = function() {
       initApp();
     };
+    // 兼顧 mobile 瀏覽器 DOMContentLoaded 生命週期
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!document.getElementById('modal-student').classList.contains('hidden')) return;
+      openStudentLoginModal(true);
+    });
   </script>
 </body>
 </html>
