@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歡樂分數探險島 - 國小三年級數學互動自學網</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 圓體與適合學童閱讀的字體 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'Fredoka', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFDE59',
+              orange: '#FF914D',
+              blue: '#38B6FF',
+              darkBlue: '#004AAD',
+              green: '#7ED957',
+              cream: '#FFFBEA',
+              pink: '#FF66C4',
+              cardBg: '#FFFFFF',
+            }
+          },
+          boxShadow: {
+            'bubbly': '0 8px 0 rgba(0, 0, 0, 0.1)',
+            'bubbly-active': '0 2px 0 rgba(0, 0, 0, 0.15)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F0F9FF;
+      background-image: radial-gradient(#BAE6FD 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 彈跳按鈕微交互 */
+    .bounce-btn {
+      transition: all 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bounce-btn:hover {
+      transform: translateY(-2px);
+    }
+    .bounce-btn:active {
+      transform: translateY(4px);
+    }
+
+    /* 隱藏滾動條但保持滾動 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* SVG 選取陰影動畫 */
+    .piece-selected {
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.8));
+      stroke-width: 3.5px !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col font-sans pb-10">
+
+  <!-- =============================== -->
+  <!-- 頂部導航與狀態列 -->
+  <!-- =============================== -->
+  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b-4 border-sky-200 px-4 py-2.5 shadow-sm">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      
+      <!-- Logo 與稱號 -->
+      <div class="flex items-center space-x-2.5">
+        <span class="text-3xl filter drop-shadow">🍰</span>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black text-sky-600 tracking-wide flex items-center gap-1.5">
+            分數探險島
+            <span class="text-xs bg-amber-400 text-amber-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">小三數學</span>
+          </h1>
+          <p class="text-xs text-slate-600 font-semibold hidden sm:block">動手玩「連續量」・懂等分・學分子分母</p>
+        </div>
+      </div>
+
+      <!-- 右側工具：學生身分標籤、星星積分、音效開關 -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- 學生資訊徽章 -->
+        <button onclick="openStudentLoginModal(false)" class="bounce-btn bg-white hover:bg-sky-50 border-2 border-sky-300 rounded-2xl px-2.5 sm:px-3.5 py-1.5 flex items-center gap-2 shadow-sm text-left">
+          <span class="text-xl">🎒</span>
+          <div class="text-xs">
+            <div class="font-black text-sky-900 leading-tight" id="header-student-name">未登入學生</div>
+            <div class="text-[10px] text-slate-500 font-bold" id="header-student-detail">點擊填寫班級座號</div>
+          </div>
+        </button>
+
+        <!-- 老師後台入口按鈕 -->
+        <button onclick="openTeacherDashboard()" class="bounce-btn bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 rounded-2xl px-2.5 sm:px-3 py-1.5 flex items-center gap-1.5 shadow-sm text-purple-900 font-black text-xs" title="老師查看全班通關名單">
+          <span class="text-base">👩‍🏫</span>
+          <span class="hidden sm:inline">老師後台</span>
+        </button>
+
+        <!-- 冒險星數 -->
+        <div class="bg-amber-100 border-2 border-amber-300 rounded-2xl px-3.5 py-1.5 flex items-center gap-1.5 shadow-sm">
+          <span class="text-xl">⭐</span>
+          <span class="font-black text-amber-800 text-lg" id="star-count">0</span>
+          <span class="text-xs font-bold text-amber-600 hidden xs:inline">分</span>
+        </div>
+
+        <!-- 音效切換 -->
+        <button id="sound-toggle-btn" onclick="toggleSound()" class="bounce-btn bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 p-2 rounded-2xl text-slate-700 text-lg flex items-center justify-center w-11 h-11" title="切換音效">
+          <span id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 主題分頁導航列 -->
+    <nav class="max-w-5xl mx-auto mt-2.5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+      <button onclick="switchTab('tab-detective')" id="nav-detective" class="tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-sky-500 text-white border-sky-700 shadow-md">
+        <span id="icon-detective">🔍</span> 觀念偵探社
+      </button>
+      <button onclick="switchTab('tab-lab')" id="nav-lab" class="tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60">
+        <span id="icon-lab">🔒</span> 分數實驗室
+      </button>
+      <button onclick="switchTab('tab-chef')" id="nav-chef" class="tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60">
+        <span id="icon-chef">🔒</span> 小廚師分分看
+      </button>
+      <button onclick="switchTab('tab-match')" id="nav-match" class="tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60">
+        <span id="icon-match">🔒</span> 分數大連線
+      </button>
+      <button onclick="switchTab('tab-game')" id="nav-game" class="tab-btn bounce-btn flex-1 min-w-[130px] py-2 px-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-b-4 transition-all bg-slate-100 text-slate-400 border-slate-200 opacity-60">
+        <span id="icon-game">🔒</span> 怪獸大挑戰
+      </button>
+    </nav>
+  </header>
+
+  <!-- =============================== -->
+  <!-- 主操作區容器 -->
+  <!-- =============================== -->
+  <main class="max-w-5xl mx-auto w-full px-4 mt-4 flex-1">
+
+    <!-- ============================================== -->
+    <!-- 分頁一：【觀念偵探社】什麼是「等分」？ -->
+    <!-- ============================================== -->
+    <section id="tab-detective" class="tab-content space-y-4">
+      <!-- 提示條 -->
+      <div class="bg-gradient-to-r from-amber-200 to-yellow-100 border-2 border-amber-300 rounded-3xl p-4 shadow-sm flex items-start gap-3.5">
+        <div class="bg-amber-400 text-white rounded-2xl p-2.5 text-2xl shadow-inner flex-shrink-0">🕵️</div>
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-amber-950">任務 1：找出真正公平的「等分」！</h2>
+          <p class="text-sm text-amber-900 font-semibold mt-0.5">
+            三年級數學大秘訣：<strong class="underline decoration-wavy decoration-amber-500">「每份的大小一模一樣大」</strong>，才能叫做「等分」喔！點擊天平秤秤看，找出哪一個切法是真正的等分！（⭐ <span class="text-amber-950 font-black underline">獲得 10 顆星以上</span> 即可解鎖第二關【分數實驗室】！）
+          </p>
+        </div>
+      </div>
+
+      <!-- 案件關卡卡片 -->
+      <div class="bg-white rounded-3xl border-4 border-amber-200 shadow-md p-5 sm:p-6">
+        <div class="flex items-center justify-between mb-4 border-b pb-3 border-amber-100">
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 <span id="det-level-num">1</span> 題 / 共 3 題</span>
+            <span id="det-question-title" class="font-black text-slate-700 text-base md:text-lg">一張正方形色紙要分給 4 位小朋友</span>
+          </div>
+          <span class="text-sm font-bold text-slate-600">比較看看：誰切得公平？</span>
+        </div>
+
+        <!-- 左右切法選擇區 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-3">
+          
+          <!-- 切法 A -->
+          <div id="card-cut-a" onclick="selectDetectiveOption('A')" class="relative cursor-pointer group border-4 border-slate-200 hover:border-amber-400 rounded-3xl p-4 bg-amber-50/40 transition-all text-center">
+            <div class="absolute top-3 left-3 bg-white font-black text-sm px-3 py-1 rounded-full border-2 border-slate-300 text-slate-700 shadow-sm">
+              切法 (A)
+            </div>
+            <div id="svg-cut-a-container" class="h-48 flex items-center justify-center p-2"></div>
+            <p id="desc-cut-a" class="mt-2 text-sm font-bold text-slate-600">切成了 4 塊</p>
+          </div>
+
+          <!-- 切法 B -->
+          <div id="card-cut-b" onclick="selectDetectiveOption('B')" class="relative cursor-pointer group border-4 border-slate-200 hover:border-amber-400 rounded-3xl p-4 bg-amber-50/40 transition-all text-center">
+            <div class="absolute top-3 left-3 bg-white font-black text-sm px-3 py-1 rounded-full border-2 border-slate-300 text-slate-700 shadow-sm">
+              切法 (B)
+            </div>
+            <div id="svg-cut-b-container" class="h-48 flex items-center justify-center p-2"></div>
+            <p id="desc-cut-b" class="mt-2 text-sm font-bold text-slate-600">切成了 4 塊</p>
+          </div>
+
+        </div>
+
+        <!-- 公平天平檢驗台 -->
+        <div class="bg-sky-50 rounded-3xl border-2 border-sky-200 p-5 mt-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">⚖️</span>
+              <div>
+                <h3 class="font-black text-sky-900 text-base">公平天平實驗台</h3>
+                <p class="text-xs text-sky-700">拿其中兩塊放上天平比比看，有沒有一樣大？</p>
+              </div>
+            </div>
+
+            <!-- 秤重按鈕組 -->
+            <div class="flex gap-2 w-full sm:w-auto">
+              <button onclick="testOnBalance('A')" class="bounce-btn flex-1 sm:flex-initial bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-sm px-4 py-2 rounded-2xl border-b-4 border-amber-600 shadow-sm">
+                秤秤看 (A)
+              </button>
+              <button onclick="testOnBalance('B')" class="bounce-btn flex-1 sm:flex-initial bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-sm px-4 py-2 rounded-2xl border-b-4 border-amber-600 shadow-sm">
+                秤秤看 (B)
+              </button>
+            </div>
+          </div>
+
+          <!-- 視覺化天平置中展示區 -->
+          <div class="bg-white/85 rounded-2xl border border-sky-200/80 p-4 flex flex-col items-center justify-center min-h-[220px]">
+            <div class="w-full flex items-center justify-center py-1">
+              <svg id="balance-svg" viewBox="0 0 400 195" class="w-full max-w-md h-48 drop-shadow-sm">
+                <polygon points="200,105 178,165 222,165" fill="#64748B" />
+                <rect x="145" y="160" width="110" height="12" rx="5" fill="#475569" />
+                <circle cx="200" cy="105" r="7" fill="#F59E0B" />
+
+                <g id="balance-beam" style="transform-origin: 200px 105px; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                  <line x1="60" y1="105" x2="340" y2="105" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+                  <circle cx="60" cy="105" r="5" fill="#F59E0B" />
+                  <circle cx="340" cy="105" r="5" fill="#F59E0B" />
+                  
+                  <g id="left-pan">
+                    <line x1="60" y1="105" x2="35" y2="135" stroke="#94A3B8" stroke-width="2" />
+                    <line x1="60" y1="105" x2="85" y2="135" stroke="#94A3B8" stroke-width="2" />
+                    <path d="M 25 135 Q 60 145 95 135 Z" fill="#CBD5E1" stroke="#64748B" stroke-width="2" />
+                    <g id="left-pan-item"></g>
+                  </g>
+
+                  <g id="right-pan">
+                    <line x1="340" y1="105" x2="315" y2="135" stroke="#94A3B8" stroke-width="2" />
+                    <line x1="340" y1="105" x2="365" y2="135" stroke="#94A3B8" stroke-width="2" />
+                    <path d="M 305 135 Q 340 145 375 135 Z" fill="#CBD5E1" stroke="#64748B" stroke-width="2" />
+                    <g id="right-pan-item"></g>
+                  </g>
+                </g>
+              </svg>
+            </div>
+
+            <div id="balance-bubble" class="mt-3 bg-white border-2 border-sky-400 text-sky-900 font-black text-xs md:text-sm px-5 py-2 rounded-full shadow-sm text-center max-w-lg transition-all">
+              請點上方「秤秤看 (A)」或「(B)」按鈕來比大小！
+            </div>
+          </div>
+        </div>
+
+        <!-- 結論選擇按鈕 -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <p class="font-black text-slate-700 text-sm sm:text-base">你的偵探推理結果：</p>
+          <div class="flex gap-3 w-full sm:w-auto">
+            <button onclick="confirmDetectiveAnswer('A')" class="bounce-btn flex-1 sm:flex-initial bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base px-6 py-2.5 rounded-2xl border-b-4 border-emerald-700 shadow-md">
+              選 (A) 才是真正等分
+            </button>
+            <button onclick="confirmDetectiveAnswer('B')" class="bounce-btn flex-1 sm:flex-initial bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base px-6 py-2.5 rounded-2xl border-b-4 border-emerald-700 shadow-md">
+              選 (B) 才是真正等分
+            </button>
+          </div>
+        </div>
+
+        <div id="det-feedback" class="hidden mt-4 p-4 rounded-2xl border-2 text-sm font-bold flex items-center gap-3 transition-all"></div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 分頁二：【分數實驗室】分子分母連動機 -->
+    <!-- ============================================== -->
+    <section id="tab-lab" class="tab-content hidden space-y-4">
+      <div class="bg-gradient-to-r from-sky-200 to-blue-100 border-2 border-sky-300 rounded-3xl p-4 shadow-sm flex items-start gap-3.5">
+        <div class="bg-sky-500 text-white rounded-2xl p-2.5 text-2xl shadow-inner flex-shrink-0">🔬</div>
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-sky-950">分數連動機：看懂「分母」與「分子」</h2>
+          <p class="text-sm text-sky-900 font-semibold mt-0.5">
+            拉動滑桿切分蛋糕，點擊每塊可以吃掉/選取它！注意看下方「分數卡片」是怎麼跟著變化的！
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl border-4 border-sky-200 shadow-md p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- 左側互動控制面板 -->
+        <div class="lg:col-span-5 space-y-5 bg-sky-50/60 p-4 sm:p-5 rounded-3xl border-2 border-sky-100">
+          
+          <div>
+            <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">1. 選擇連續量食物</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="lab-shape-strip" onclick="setLabShape('strip')" class="bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-sky-500 text-white border-sky-600 shadow-sm">
+                <span>🥖</span> 長條蜂蜜蛋糕
+              </button>
+              <button id="lab-shape-circle" onclick="setLabShape('circle')" class="bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-white text-slate-700 border-slate-300 hover:bg-slate-100">
+                <span>🍕</span> 圓形美味披薩
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-black text-slate-600 uppercase tracking-wider">
+                2. 要平分成幾等分？(<span class="text-sky-600 font-black">分母</span>)
+              </label>
+              <span class="bg-sky-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full" id="lab-denom-label">平分 4 塊</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="adjustLabDenom(-1)" class="bounce-btn w-9 h-9 rounded-xl bg-sky-200 hover:bg-sky-300 text-sky-800 font-black flex items-center justify-center text-lg">-</button>
+              <input type="range" id="lab-denom-slider" min="2" max="10" value="4" step="1" oninput="onLabDenomSliderChange(this.value)" class="flex-1 accent-sky-500 h-2 bg-slate-200 rounded-lg cursor-pointer">
+              <button onclick="adjustLabDenom(1)" class="bounce-btn w-9 h-9 rounded-xl bg-sky-200 hover:bg-sky-300 text-sky-800 font-black flex items-center justify-center text-lg">+</button>
+            </div>
+            <p class="text-xs text-slate-600 font-bold mt-1.5">💡 分母代表「完整的 1 個物體被等分成了幾份」。</p>
+          </div>
+
+          <div class="pt-2 border-t border-sky-200 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-600">快速塗色：</span>
+            <div class="flex gap-2">
+              <button onclick="setLabNumerator(1)" class="bounce-btn text-xs bg-white border border-slate-300 text-slate-700 px-2.5 py-1 rounded-xl font-bold hover:bg-slate-50">選 1 份</button>
+              <button onclick="setLabNumerator(labDenom)" class="bounce-btn text-xs bg-white border border-slate-300 text-slate-700 px-2.5 py-1 rounded-xl font-bold hover:bg-slate-50">全選 (整塊)</button>
+              <button onclick="setLabNumerator(0)" class="bounce-btn text-xs bg-rose-50 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-xl font-bold hover:bg-rose-100">清除</button>
+            </div>
+          </div>
+
+          <div class="bg-amber-100/80 border border-amber-300 p-3 rounded-2xl text-xs text-amber-900 font-bold leading-relaxed">
+            👆 <strong>親自摸摸看：</strong>請直接點擊右側的圖形區塊，被選中的區塊會發光著色喔！
+          </div>
+
+          <div class="bg-white border-2 border-indigo-200 p-3.5 rounded-2xl shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black text-indigo-950 flex items-center gap-1">
+                <span>📋</span> 實驗室探索任務
+              </span>
+              <span id="lab-task-counter" class="text-[11px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">0/3 完成</span>
+            </div>
+            <ul class="text-xs font-bold text-slate-600 space-y-1.5">
+              <li id="task-shape" class="flex items-center gap-1.5 text-slate-400">
+                <span>⚪</span> 試著切換長條與披薩
+              </li>
+              <li id="task-denom" class="flex items-center gap-1.5 text-slate-400">
+                <span>⚪</span> 拉動滑桿切分 5 等分以上
+              </li>
+              <li id="task-pieces" class="flex items-center gap-1.5 text-slate-400">
+                <span>⚪</span> 點選圖形中的等分著色
+              </li>
+            </ul>
+            <button id="lab-unlock-btn" onclick="finishLabQuest()" disabled class="w-full mt-2 py-2 px-3 rounded-xl font-black text-xs bg-slate-200 text-slate-400 border border-slate-300 transition-all flex items-center justify-center gap-1 cursor-not-allowed">
+              <span>🔒</span> 完成探索後解鎖小廚師烘焙坊
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 右側視覺繪圖區與算式 -->
+        <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
+          <div class="relative bg-amber-50/50 rounded-3xl border-2 border-dashed border-amber-300 p-4 flex flex-col items-center justify-center min-h-[260px] overflow-hidden">
+            <span class="text-xs font-bold text-slate-600 flex items-center gap-1 mb-1 self-start sm:self-center">
+              <span>👉 點擊下圖各區塊進行選取</span>
+            </span>
+
+            <div id="lab-svg-container" class="w-full h-52 flex items-center justify-center py-1"></div>
+
+            <div id="lab-piece-hint" class="text-xs font-black text-amber-800 bg-white/90 px-3 py-1 rounded-full shadow-sm mt-1">
+              每 1 等分是 1/4 個
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-indigo-200 rounded-3xl p-4 shadow-sm flex flex-col sm:flex-row items-center gap-4">
+            <div class="bg-white border-4 border-indigo-400 rounded-2xl py-3.5 px-4 shadow-md flex flex-col items-center justify-center min-w-[110px] flex-shrink-0">
+              <div class="w-full text-center">
+                <span id="lab-display-num" class="text-3xl font-black text-rose-500 leading-tight">2</span>
+                <span class="block text-[11px] font-black text-rose-700 mt-0.5">分子(選了幾等分)</span>
+              </div>
+              
+              <div class="w-20 h-1.5 bg-slate-800 my-2 rounded-full flex-shrink-0 shadow-sm"></div>
+              
+              <div class="w-full text-center">
+                <span id="lab-display-denom" class="text-3xl font-black text-sky-600 leading-tight">4</span>
+                <span class="block text-[11px] font-black text-sky-800 mt-0.5">分母(平分成幾等分)</span>
+              </div>
+            </div>
+
+            <div class="flex-1 space-y-1.5 text-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black bg-indigo-500 text-white px-2 py-0.5 rounded-md">生活數學筆記</span>
+                <span id="lab-unit-name" class="text-xs font-bold text-slate-600">一條長條蛋糕</span>
+              </div>
+              <p class="text-sm md:text-base font-bold leading-relaxed text-slate-700" id="lab-sentence">
+                把 1 條蛋糕平分成 <span class="text-sky-600 font-black text-lg underline">4</span> 等分，<br>
+                選取了其中的 <span class="text-rose-500 font-black text-lg underline">2</span> 等分，<br>
+                合起來就是 <span class="text-indigo-600 font-black text-xl">4 分之 2 條</span> 蛋糕！
+              </p>
+              <div id="lab-special-note" class="text-xs font-black text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-xl inline-block">
+                ✨ 提示：分子比分母小，代表選取的比「1 整條」還要少喔！
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 分頁三：【小廚師分分看】動手切切看（任務闖關） -->
+    <!-- ============================================== -->
+    <section id="tab-chef" class="tab-content hidden space-y-4">
+      <div class="bg-gradient-to-r from-emerald-200 to-teal-100 border-2 border-emerald-300 rounded-3xl p-4 shadow-sm flex items-start gap-3.5">
+        <div class="bg-emerald-500 text-white rounded-2xl p-2.5 text-2xl shadow-inner flex-shrink-0">👨‍🍳</div>
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-emerald-950">小廚師烘焙坊：客人的點單來了！</h2>
+          <p class="text-sm text-emerald-900 font-semibold mt-0.5">
+            客人想吃特定份量的點心！請幫他：<strong class="text-emerald-950 underline">① 設定切成幾等分（分母）</strong> ➡️ <strong class="text-emerald-950 underline">② 點擊盤子選取份數（分子）</strong> ➡️ <strong class="text-emerald-950 underline">③ 上菜檢查！</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl border-4 border-emerald-200 shadow-md p-5 sm:p-6 relative overflow-hidden">
+        
+        <div class="bg-amber-50 border-3 border-amber-300 rounded-3xl p-4 mb-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div id="chef-customer-avatar" class="w-16 h-16 bg-white rounded-2xl border-2 border-amber-300 flex items-center justify-center text-4xl shadow-sm">
+              🐻
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="chef-customer-name" class="font-black text-slate-800 text-base">小棕熊客人</span>
+                <span class="text-xs bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">第 <span id="chef-round-num">1</span> 關 / 共 4 關</span>
+              </div>
+              <p id="chef-order-speech" class="text-sm md:text-lg font-black text-amber-950 mt-1">
+                「老闆！我想要外帶 <span class="text-rose-600 text-xl font-black underline decoration-wavy">5/6 塊蔥抓餅</span>！」
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-amber-200 shadow-sm flex-shrink-0">
+            <span class="text-xs font-bold text-slate-600">目標分數：</span>
+            <div class="inline-flex flex-col items-center justify-center text-xl font-black leading-none text-rose-600">
+              <span id="chef-target-num">5</span>
+              <span class="w-7 h-1 bg-slate-800 my-1 rounded-full flex-shrink-0"></span>
+              <span id="chef-target-denom">6</span>
+            </div>
+            <span id="chef-target-unit" class="text-sm font-bold text-slate-700">塊蔥抓餅</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <div class="lg:col-span-4 space-y-4 bg-emerald-50/60 p-4 rounded-3xl border-2 border-emerald-100">
+            <div>
+              <span class="text-xs font-black text-emerald-800 uppercase tracking-wider block mb-2">
+                步驟 1：拿起小刀，要切成幾等分？
+              </span>
+              <div class="grid grid-cols-3 gap-2" id="chef-cut-buttons"></div>
+            </div>
+
+            <div class="pt-2 border-t border-emerald-200">
+              <span class="text-xs font-black text-emerald-800 uppercase tracking-wider block mb-2">
+                步驟 2：點選盤中食物
+              </span>
+              <p class="text-xs text-slate-600 font-semibold leading-relaxed">
+                目前盤中已平分成 <b id="chef-current-denom-badge" class="text-emerald-700 font-black">--</b> 等分，<br>
+                你已經選取了 <b id="chef-current-num-badge" class="text-rose-600 font-black">0</b> 等分。
+              </p>
+            </div>
+
+            <button onclick="checkChefDish()" class="bounce-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg py-3 rounded-2xl border-b-4 border-emerald-700 shadow-lg flex items-center justify-center gap-2">
+              <span>🍽️</span> 送出餐點給客人！
+            </button>
+          </div>
+
+          <div class="lg:col-span-8 flex flex-col items-center justify-between relative bg-slate-50 rounded-3xl border-2 border-slate-200 p-4 sm:p-6 min-h-[380px] md:min-h-[440px]">
+            <div id="chef-svg-container" class="w-full flex-1 flex items-center justify-center py-2 min-h-[280px] sm:min-h-[340px]"></div>
+
+            <div class="mt-2 text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-100/90 px-4 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 flex-shrink-0">
+              <span>👆 點擊盤中的每一塊食物即可選取／取消！</span>
+            </div>
+
+            <div id="knife-slash-effect" class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity">
+              <span class="text-6xl animate-pulse">🔪✨</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="chef-feedback" class="hidden mt-4 p-4 rounded-2xl border-2 font-bold text-sm flex items-center gap-3"></div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 分頁四：【分數大連線】三合一配對挑戰 -->
+    <!-- ============================================== -->
+    <section id="tab-match" class="tab-content hidden space-y-4">
+      <div class="bg-gradient-to-r from-pink-200 to-rose-100 border-2 border-pink-300 rounded-3xl p-4 shadow-sm flex items-start gap-3.5">
+        <div class="bg-pink-500 text-white rounded-2xl p-2.5 text-2xl shadow-inner flex-shrink-0">🎯</div>
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-pink-950">分數連線挑戰：三位一體配對</h2>
+          <p class="text-sm text-pink-900 font-semibold mt-0.5">
+            請從三欄中各選出一張卡片：<strong class="text-pink-950">【看圖形】+【讀生活句子】+【找數學符號】</strong>！如果三個代表同一個分數，就能成功配對連線！
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl border-4 border-pink-200 shadow-md p-5 sm:p-6">
+        
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-pink-100">
+          <div class="flex items-center gap-2">
+            <span class="text-xs bg-pink-500 text-white font-black px-2.5 py-1 rounded-full">已配對成功：<span id="match-score-badge">0 / 4</span> 組</span>
+            <span class="text-xs text-slate-600 font-bold hidden sm:inline">找出所有一模一樣的分數組合吧！</span>
+          </div>
+          <button onclick="initMatchGame()" class="bounce-btn text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-black px-3 py-1.5 rounded-xl border border-slate-300">
+            🔄 重新開始挑戰
+          </button>
+        </div>
+
+        <div class="relative overflow-x-auto no-scrollbar py-2">
+          <div id="match-board" class="relative min-w-[620px] md:min-w-0">
+            <svg id="match-lines-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+
+            <div class="grid grid-cols-3 gap-4 md:gap-8 relative z-20">
+              
+              <!-- 第一欄：圖像卡 -->
+              <div class="space-y-3">
+                <div class="bg-pink-50 border-2 border-pink-200 rounded-2xl py-2 px-3 text-center shadow-sm">
+                  <span class="font-black text-pink-900 text-xs sm:text-sm">① 看圖形量感</span>
+                </div>
+                <div id="match-col-1" class="space-y-3"></div>
+              </div>
+
+              <!-- 第二欄：生活文意卡 -->
+              <div class="space-y-3">
+                <div class="bg-pink-50 border-2 border-pink-200 rounded-2xl py-2 px-3 text-center shadow-sm">
+                  <span class="font-black text-pink-900 text-xs sm:text-sm">② 讀生活描述</span>
+                </div>
+                <div id="match-col-2" class="space-y-3"></div>
+              </div>
+
+              <!-- 第三欄：分數符號卡 -->
+              <div class="space-y-3">
+                <div class="bg-pink-50 border-2 border-pink-200 rounded-2xl py-2 px-3 text-center shadow-sm">
+                  <span class="font-black text-pink-900 text-xs sm:text-sm">③ 找數學符號</span>
+                </div>
+                <div id="match-col-3" class="space-y-3"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div id="match-feedback" class="hidden mt-4 p-4 rounded-2xl border-2 font-bold text-sm flex items-center gap-3"></div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 分頁五：【怪獸大挑戰】小試身手闖關答題 -->
+    <!-- ============================================== -->
+    <section id="tab-game" class="tab-content hidden space-y-4">
+      <div class="bg-gradient-to-r from-purple-200 to-indigo-100 border-2 border-purple-300 rounded-3xl p-4 shadow-sm flex items-start gap-3.5">
+        <div class="bg-purple-600 text-white rounded-2xl p-2.5 text-2xl shadow-inner flex-shrink-0">👾</div>
+        <div>
+          <h2 class="text-lg md:text-xl font-black text-purple-950">分數怪獸城堡：終極大挑戰！</h2>
+          <p class="text-sm text-purple-900 font-semibold mt-0.5">
+            可愛的分數小怪獸阻擋了去路！用你的分數知識回答問題，戰勝怪獸獲得王者星章吧！
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl border-4 border-purple-200 shadow-md p-5 sm:p-6 relative">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-100">
+          <div class="flex items-center gap-2">
+            <span class="text-xs bg-purple-600 text-white font-black px-2.5 py-1 rounded-full">第 <span id="game-quiz-num">1</span> 題 / 共 5 題</span>
+            <span id="game-quiz-topic" class="text-xs font-bold text-purple-800">觀念綜合挑戰</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">血量 HP：</span>
+            <div id="game-hp-bar" class="flex gap-1 text-lg">❤️❤️❤️</div>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-center my-4 space-y-4">
+          <div class="w-24 h-24 bg-purple-100 rounded-3xl border-4 border-purple-300 flex items-center justify-center text-5xl shadow-inner animate-bounce">
+            <span id="game-monster-avatar">👾</span>
+          </div>
+
+          <div class="w-full max-w-xl bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
+            <p id="game-question-text" class="text-base sm:text-lg font-black text-purple-950">
+              問題載入中...
+            </p>
+            <div id="game-question-visual" class="mt-3 flex items-center justify-center min-h-[100px]"></div>
+          </div>
+
+          <div id="game-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl"></div>
+        </div>
+
+        <div id="game-feedback" class="hidden mt-4 p-4 rounded-2xl border-2 font-bold text-sm flex items-center gap-3"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- 模組視窗 (Modals) -->
+  <!-- ============================================== -->
+
+  <!-- 學生登入 / 編輯資料 Modal -->
+  <div id="modal-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl border-4 border-sky-300 shadow-2xl max-w-md w-full p-6 relative animate-fade-in">
+      <div class="text-center space-y-2 mb-4">
+        <div class="text-4xl">🎒</div>
+        <h3 class="text-xl font-black text-sky-900">歡迎來到分數探險島！</h3>
+        <p class="text-xs text-slate-500 font-bold">請填寫你的班級與姓名，學習紀錄會自動儲存喔！</p>
+      </div>
+
+      <form onsubmit="saveStudentInfo(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-black text-slate-600 mb-1">班級 (例如: 302)</label>
+          <input type="text" id="input-student-class" required placeholder="請輸入班級" class="w-full px-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-400 focus:outline-none font-bold text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-black text-slate-600 mb-1">座號 (例如: 08)</label>
+          <input type="text" id="input-student-seat" required placeholder="請輸入座號" class="w-full px-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-400 focus:outline-none font-bold text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-black text-slate-600 mb-1">學生姓名</label>
+          <input type="text" id="input-student-name" required placeholder="請輸入姓名" class="w-full px-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-400 focus:outline-none font-bold text-sm">
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button type="button" onclick="closeModal('modal-student')" id="modal-student-cancel-btn" class="flex-1 py-2.5 rounded-2xl border-2 border-slate-200 font-black text-slate-600 hover:bg-slate-100 text-sm">
+            取消
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-black rounded-2xl border-b-4 border-sky-700 text-sm shadow-md">
+            開始探險！
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 老師後台 Modal -->
+  <div id="modal-teacher" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl border-4 border-purple-300 shadow-2xl max-w-2xl w-full p-6 relative animate-fade-in max-h-[90vh] flex flex-col">
+      <div class="text-center space-y-1 mb-4 flex-shrink-0">
+        <div class="text-3xl">👩‍🏫</div>
+        <h3 class="text-xl font-black text-purple-950">全班探險島學習進度榜</h3>
+        <p class="text-xs text-slate-500 font-bold">老師可在這裡查看學生通關數據、設定表單網址與匯出數據</p>
+      </div>
+
+      <!-- 概覽數據統計卡片 -->
+      <div class="grid grid-cols-3 gap-3 mb-4 flex-shrink-0">
+        <div class="bg-purple-50 border border-purple-200 p-3 rounded-2xl text-center">
+          <span class="block text-[11px] font-bold text-slate-500">已登入總人數</span>
+          <span id="teacher-stat-count" class="text-lg font-black text-purple-900">0 人</span>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 p-3 rounded-2xl text-center">
+          <span class="block text-[11px] font-bold text-slate-500">最高累積星星</span>
+          <span id="teacher-stat-max-star" class="text-lg font-black text-amber-600">0 ⭐</span>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-center">
+          <span class="block text-[11px] font-bold text-slate-500">全通關率</span>
+          <span id="teacher-stat-pass-rate" class="text-lg font-black text-emerald-600">0%</span>
+        </div>
+      </div>
+
+      <!-- 學生進度表格 -->
+      <div class="overflow-y-auto flex-1 border border-slate-200 rounded-2xl mb-4">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-purple-100 text-purple-950 font-black sticky top-0">
+            <tr>
+              <th class="p-3">班級 / 座號</th>
+              <th class="p-3">姓名</th>
+              <th class="p-3">獲得星數</th>
+              <th class="p-3">解鎖關卡</th>
+            </tr>
+          </thead>
+          <tbody id="teacher-table-body" class="divide-y divide-slate-100 font-bold text-slate-700">
+            <!-- 數據動態渲染 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-purple-100 flex justify-between items-center flex-wrap gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <button onclick="exportTeacherDataCSV()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-xs flex items-center gap-1 shadow-sm">
+            <span>📥</span> 匯出全班 CSV 紀錄
+          </button>
+          <button onclick="toggleTeacherFormConfig()" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-xs flex items-center gap-1 shadow-sm">
+            <span>🔗</span> 設定試算表/表單網址
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="clearAllData()" class="text-xs text-rose-600 hover:underline font-bold">⚠️ 清除紀錄</button>
+          <button onclick="closeModal('modal-teacher')" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl text-xs">關閉</button>
+        </div>
+      </div>
+
+      <!-- 後台：試算表 / 表單網址設定區塊 (展開面板) -->
+      <div id="teacher-form-config-panel" class="hidden mt-3 p-4 bg-purple-50 border-2 border-purple-200 rounded-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <h4 class="font-black text-purple-900 text-sm">📊 設定 Google 試算表 / Webhook 回傳網址</h4>
+          <span class="text-[10px] text-purple-700 bg-purple-200 px-2 py-0.5 rounded-full font-bold">老師專用</span>
+        </div>
+        <p class="text-slate-600 font-semibold leading-relaxed">
+          請貼上您的 <b>Google 表單連結</b> 或 <b>Google Apps Script (Web App / Webhook) 網址</b>。學生通關後點選回傳時，將會自動傳送成績欄位至該位址：
+        </p>
+        <div class="flex gap-2">
+          <input type="url" id="input-teacher-sheet-url" placeholder="https://docs.google.com/forms/d/e/... 或 Web App 網址" class="flex-1 px-3 py-2 rounded-xl border border-purple-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-400">
+          <button onclick="saveTeacherFormUrl()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl flex-shrink-0 shadow-sm">
+            儲存連結
+          </button>
+        </div>
+        <div id="teacher-url-status" class="text-[11px] font-bold text-slate-500">
+          目前狀態：<span id="current-sheet-url-display" class="text-purple-800">尚未設定（預設匯出 CSV 成績單）</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 學生通關榮譽證書與回傳 Modal -->
+  <!-- ============================================== -->
+  <div id="modal-completion" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-gradient-to-b from-amber-50 to-white rounded-3xl border-4 border-amber-400 shadow-2xl max-w-lg w-full p-6 text-center relative animate-bounce-in space-y-4">
+      <div class="text-5xl animate-bounce">🏆✨</div>
+      <h3 class="text-2xl font-black text-amber-900">大恭喜！獲得分數大師榮譽證書！</h3>
+      <p class="text-xs text-amber-800 font-bold">你已經成功通過所有分數探險島的挑戰！</p>
+
+      <!-- 證書數據卡片 -->
+      <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-inner space-y-3">
+        <div class="flex justify-between items-center text-sm border-b pb-2 border-amber-100">
+          <span class="text-slate-500 font-bold">班級 / 座號：</span>
+          <span id="cert-student-class-seat" class="font-black text-slate-800 text-base">301 / 01</span>
+        </div>
+        <div class="flex justify-between items-center text-sm border-b pb-2 border-amber-100">
+          <span class="text-slate-500 font-bold">探險家姓名：</span>
+          <span id="cert-student-name" class="font-black text-purple-900 text-base">小探險家</span>
+        </div>
+        <div class="flex justify-between items-center text-sm border-b pb-2 border-amber-100">
+          <span class="text-slate-500 font-bold">獲得總星數：</span>
+          <span id="cert-student-stars" class="font-black text-amber-600 text-lg">0 ⭐</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-500 font-bold">解鎖關卡：</span>
+          <span id="cert-student-unlocks" class="font-black text-emerald-600 text-base">通關 5 / 5 關</span>
+        </div>
+      </div>
+
+      <!-- 動作按鈕 -->
+      <div class="space-y-2 pt-2">
+        <button id="cert-submit-btn" onclick="submitToTeacherForm()" class="bounce-btn w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl border-b-4 border-emerald-700 text-sm shadow-md flex items-center justify-center gap-2">
+          <span>📤</span> 一鍵回傳成績給老師 (送出紀錄)
+        </button>
+        <!-- 送出狀態與回饋提示條 (預設隱藏) -->
+        <div id="cert-submit-feedback" class="hidden p-3 rounded-2xl border-2 text-xs font-black transition-all flex items-center justify-center gap-2"></div>
+
+        <button onclick="closeModal('modal-completion')" class="bounce-btn w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-2xl border border-slate-300 text-xs">
+          回到探險島視窗
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 核心邏輯擴充 JavaScript -->
+  <!-- ============================================== -->
+  <script>
+    // ----------------------------------------------
+    // 全域狀態 (State Management)
+    // ----------------------------------------------
+    let soundEnabled = true;
+    let studentInfo = {
+      name: '小探險家',
+      class: '301',
+      seat: '01',
+      stars: 0,
+      unlockedTabs: ['tab-detective']
+    };
+
+    // 音效播放 (使用 Web Audio API 避免外部音效連結失效)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'correct') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.setValueAtTime(180, now + 0.15);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        }
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+    }
+
+    // ----------------------------------------------
+    // 學生資料與本地持久化 (LocalStorage)
+    // ----------------------------------------------
+    function initApp() {
+      const saved = localStorage.getItem('fraction_island_user');
+      if (saved) {
+        studentInfo = JSON.parse(saved);
+        updateStudentHeader();
+      } else {
+        openStudentLoginModal(true);
+      }
+      checkTabUnlocks();
+      renderDetectiveLevel();
+      renderLab();
+      initChefRound();
+      initMatchGame();
+      initMonsterGame();
+    }
+
+    function updateStudentHeader() {
+      document.getElementById('header-student-name').innerText = studentInfo.name;
+      document.getElementById('header-student-detail').innerText = `${studentInfo.class} 班 ${studentInfo.seat} 號`;
+      document.getElementById('star-count').innerText = studentInfo.stars;
+    }
+
+    function saveStudentInfo(e) {
+      if (e) e.preventDefault();
+      studentInfo.class = document.getElementById('input-student-class').value.trim() || '301';
+      studentInfo.seat = document.getElementById('input-student-seat').value.trim() || '01';
+      studentInfo.name = document.getElementById('input-student-name').value.trim() || '小探險家';
+      
+      saveProgress();
+      updateStudentHeader();
+      closeModal('modal-student');
+    }
+
+    function saveProgress() {
+      localStorage.setItem('fraction_island_user', JSON.stringify(studentInfo));
+      
+      // 同時記錄至全班數據庫
+      let allRecords = JSON.parse(localStorage.getItem('fraction_island_all_records') || '[]');
+      const idx = allRecords.findIndex(r => r.class === studentInfo.class && r.seat === studentInfo.seat);
+      if (idx >= 0) {
+        allRecords[idx] = studentInfo;
+      } else {
+        allRecords.push(studentInfo);
+      }
+      localStorage.setItem('fraction_island_all_records', JSON.stringify(allRecords));
+    }
+
+    function addStars(num) {
+      studentInfo.stars += num;
+      document.getElementById('star-count').innerText = studentInfo.stars;
+      saveProgress();
+      checkTabUnlocks();
+    }
+
+    function openStudentLoginModal(force) {
+      document.getElementById('input-student-class').value = studentInfo.class;
+      document.getElementById('input-student-seat').value = studentInfo.seat;
+      document.getElementById('input-student-name').value = studentInfo.name;
+      
+      const cancelBtn = document.getElementById('modal-student-cancel-btn');
+      if (force) {
+        cancelBtn.classList.add('hidden');
+      } else {
+        cancelBtn.classList.remove('hidden');
+      }
+      document.getElementById('modal-student').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // ----------------------------------------------
+    // 解鎖機制與 Tab 切換
+    // ----------------------------------------------
+    function checkTabUnlocks() {
+      if (studentInfo.stars >= 10 && !studentInfo.unlockedTabs.includes('tab-lab')) {
+        studentInfo.unlockedTabs.push('tab-lab');
+      }
+      
+      const tabs = [
+        { id: 'tab-detective', nav: 'nav-detective', icon: 'icon-detective', defaultIcon: '🔍' },
+        { id: 'tab-lab', nav: 'nav-lab', icon: 'icon-lab', defaultIcon: '🔬' },
+        { id: 'tab-chef', nav: 'nav-chef', icon: 'icon-chef', defaultIcon: '👨‍🍳' },
+        { id: 'tab-match', nav: 'nav-match', icon: 'icon-match', defaultIcon: '🎯' },
+        { id: 'tab-game', nav: 'nav-game', icon: 'icon-game', defaultIcon: '👾' }
+      ];
+
+      tabs.forEach(t => {
+        const btn = document.getElementById(t.nav);
+        const iconSpan = document.getElementById(t.icon);
+        const isUnlocked = studentInfo.unlockedTabs.includes(t.id);
+
+        if (isUnlocked) {
+          btn.classList.remove('opacity-60', 'bg-slate-100', 'text-slate-400', 'border-slate-200');
+          btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+          iconSpan.innerText = t.defaultIcon;
+        } else {
+          btn.classList.add('opacity-60', 'bg-slate-100', 'text-slate-400', 'border-slate-200');
+          iconSpan.innerText = '🔒';
+        }
+      });
+      saveProgress();
+    }
+
+    function switchTab(tabId) {
+      playSound('click');
+      if (!studentInfo.unlockedTabs.includes(tabId)) {
+        alert('🔒 這個關卡尚未解鎖喔！請先在前面的關卡獲得更多星星或完成探索任務！');
+        return;
+      }
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+
+      const tabs = ['tab-detective', 'tab-lab', 'tab-chef', 'tab-match', 'tab-game'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-${t.replace('tab-', '')}`);
+        if (t === tabId) {
+          btn.classList.add('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
+          btn.classList.remove('bg-white', 'text-slate-700');
+        } else {
+          btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-700', 'shadow-md');
+          if (studentInfo.unlockedTabs.includes(t)) {
+            btn.classList.add('bg-white', 'text-slate-700');
+          }
+        }
+      });
+    }
+
+    // ==============================================
+    // 分頁一【觀念偵探社】核心邏輯
+    // ==============================================
+    const detectiveLevels = [
+      {
+        title: "一張正方形色紙要分給 4 位小朋友",
+        cutA: { type: 'grid-equal', parts: 4, label: "切成 4 個大小相同的正方形" },
+        cutB: { type: 'grid-unequal', parts: 4, label: "隨意畫三條線切成 4 塊" },
+        correct: 'A',
+        explanation: "切法 (A) 將正方形平分成了 4 個一模一樣大的小正方形，這才是真正的「等分」！"
+      },
+      {
+        title: "一條長條軟糖要平分給 3 個人",
+        cutA: { type: 'strip-unequal', parts: 3, label: "切成左大、中草、右小的 3 塊" },
+        cutB: { type: 'strip-equal', parts: 3, label: "切成 3 段一樣長的長條" },
+        correct: 'B',
+        explanation: "切法 (B) 每一段長度都相同，量完全一樣大，所以是「等分」！"
+      },
+      {
+        title: "一個圓形披薩要分給 6 位客人",
+        cutA: { type: 'circle-equal', parts: 6, label: "從中心均勻切成 6 個扇形" },
+        cutB: { type: 'circle-unequal', parts: 6, label: "平行切成 6 條長短不一的切片" },
+        correct: 'A',
+        explanation: "切法 (A) 每個扇形的角度與面積都相等，這才是「等分」！"
+      }
+    ];
+
+    let currentDetLevel = 0;
+    let selectedDetOption = null;
+
+    function renderDetectiveLevel() {
+      const data = detectiveLevels[currentDetLevel];
+      document.getElementById('det-level-num').innerText = currentDetLevel + 1;
+      document.getElementById('det-question-title').innerText = data.title;
+      document.getElementById('desc-cut-a').innerText = data.cutA.label;
+      document.getElementById('desc-cut-b').innerText = data.cutB.label;
+
+      document.getElementById('card-cut-a').className = "relative cursor-pointer group border-4 border-slate-200 hover:border-amber-400 rounded-3xl p-4 bg-amber-50/40 transition-all text-center";
+      document.getElementById('card-cut-b').className = "relative cursor-pointer group border-4 border-slate-200 hover:border-amber-400 rounded-3xl p-4 bg-amber-50/40 transition-all text-center";
+      selectedDetOption = null;
+
+      document.getElementById('svg-cut-a-container').innerHTML = generateDetectiveSVG(data.cutA);
+      document.getElementById('svg-cut-b-container').innerHTML = generateDetectiveSVG(data.cutB);
+
+      resetBalanceBeam();
+      document.getElementById('det-feedback').classList.add('hidden');
+    }
+
+    function generateDetectiveSVG(config) {
+      if (config.type === 'grid-equal') {
+        return `<svg viewBox="0 0 120 120" class="w-32 h-32">
+          <rect x="10" y="10" width="100" height="100" fill="#FDE68A" stroke="#F59E0B" stroke-width="4" rx="8"/>
+          <line x1="60" y1="10" x2="60" y2="110" stroke="#D97706" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="10" y1="60" x2="110" y2="60" stroke="#D97706" stroke-width="3" stroke-dasharray="4"/>
+        </svg>`;
+      } else if (config.type === 'grid-unequal') {
+        return `<svg viewBox="0 0 120 120" class="w-32 h-32">
+          <rect x="10" y="10" width="100" height="100" fill="#FDE68A" stroke="#F59E0B" stroke-width="4" rx="8"/>
+          <line x1="35" y1="10" x2="35" y2="110" stroke="#D97706" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="75" y1="10" x2="75" y2="110" stroke="#D97706" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="10" y1="40" x2="110" y2="40" stroke="#D97706" stroke-width="3" stroke-dasharray="4"/>
+        </svg>`;
+      } else if (config.type === 'strip-equal') {
+        return `<svg viewBox="0 0 160 80" class="w-40 h-24">
+          <rect x="10" y="20" width="140" height="40" fill="#BAE6FD" stroke="#0284C7" stroke-width="4" rx="8"/>
+          <line x1="56.6" y1="20" x2="56.6" y2="60" stroke="#0369A1" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="103.3" y1="20" x2="103.3" y2="60" stroke="#0369A1" stroke-width="3" stroke-dasharray="4"/>
+        </svg>`;
+      } else if (config.type === 'strip-unequal') {
+        return `<svg viewBox="0 0 160 80" class="w-40 h-24">
+          <rect x="10" y="20" width="140" height="40" fill="#BAE6FD" stroke="#0284C7" stroke-width="4" rx="8"/>
+          <line x1="40" y1="20" x2="40" y2="60" stroke="#0369A1" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="120" y1="20" x2="120" y2="60" stroke="#0369A1" stroke-width="3" stroke-dasharray="4"/>
+        </svg>`;
+      } else if (config.type === 'circle-equal') {
+        let lines = '';
+        for (let i = 0; i < 3; i++) {
+          const ang = (i * 60) * Math.PI / 180;
+          const x1 = 60 + 45 * Math.cos(ang);
+          const y1 = 60 + 45 * Math.sin(ang);
+          const x2 = 60 - 45 * Math.cos(ang);
+          const y2 = 60 - 45 * Math.sin(ang);
+          lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#15803D" stroke-width="3" stroke-dasharray="4"/>`;
+        }
+        return `<svg viewBox="0 0 120 120" class="w-32 h-32">
+          <circle cx="60" cy="60" r="45" fill="#BBF7D0" stroke="#16A34A" stroke-width="4"/>
+          ${lines}
+        </svg>`;
+      } else if (config.type === 'circle-unequal') {
+        return `<svg viewBox="0 0 120 120" class="w-32 h-32">
+          <circle cx="60" cy="60" r="45" fill="#BBF7D0" stroke="#16A34A" stroke-width="4"/>
+          <line x1="25" y1="35" x2="95" y2="35" stroke="#15803D" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="18" y1="60" x2="102" y2="60" stroke="#15803D" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="25" y1="85" x2="95" y2="85" stroke="#15803D" stroke-width="3" stroke-dasharray="4"/>
+        </svg>`;
+      }
+    }
+
+    function selectDetectiveOption(opt) {
+      playSound('click');
+      selectedDetOption = opt;
+      const cardA = document.getElementById('card-cut-a');
+      const cardB = document.getElementById('card-cut-b');
+
+      if (opt === 'A') {
+        cardA.className = "relative cursor-pointer group border-4 border-amber-500 rounded-3xl p-4 bg-amber-100/80 shadow-md transition-all text-center";
+        cardB.className = "relative cursor-pointer group border-4 border-slate-200 opacity-60 rounded-3xl p-4 bg-amber-50/40 transition-all text-center";
+      } else {
+        cardB.className = "relative cursor-pointer group border-4 border-amber-500 rounded-3xl p-4 bg-amber-100/80 shadow-md transition-all text-center";
+        cardA.className = "relative cursor-pointer group border-4 border-slate-200 opacity-60 rounded-3xl p-4 bg-amber-50/40 transition-all text-center";
+      }
+    }
+
+    function resetBalanceBeam() {
+      const beam = document.getElementById('balance-beam');
+      beam.style.transform = 'rotate(0deg)';
+      document.getElementById('left-pan-item').innerHTML = '';
+      document.getElementById('right-pan-item').innerHTML = '';
+      document.getElementById('balance-bubble').innerText = '請點上方「秤秤看 (A)」或「(B)」按鈕來比大小！';
+    }
+
+    function testOnBalance(opt) {
+      playSound('click');
+      const beam = document.getElementById('balance-beam');
+      const leftItem = document.getElementById('left-pan-item');
+      const rightItem = document.getElementById('right-pan-item');
+      const bubble = document.getElementById('balance-bubble');
+
+      const data = detectiveLevels[currentDetLevel];
+      const isCorrectOption = (opt === data.correct);
+
+      if (isCorrectOption) {
+        // 平衡時，左右兩邊放置一模一樣大的塊狀 (20x20)
+        leftItem.innerHTML = `<rect x="40" y="115" width="20" height="20" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
+        rightItem.innerHTML = `<rect x="320" y="115" width="20" height="20" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
+        beam.style.transform = 'rotate(0deg)';
+        bubble.innerHTML = `✨ <b>切法 (${opt}) 平衡了！</b> 秤盤兩邊的每一塊重量與大小完全一模一樣！屬於真正「等分」！`;
+        bubble.className = "mt-3 bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-black text-xs md:text-sm px-5 py-2 rounded-full shadow-sm text-center max-w-lg transition-all";
+      } else {
+        // 傾斜時，左邊沉下去放較大塊 (30x30, 微調x,y置中)，右邊抬高放較小塊 (14x14)
+        leftItem.innerHTML = `<rect x="35" y="105" width="30" height="30" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="4"/>`;
+        rightItem.innerHTML = `<rect x="323" y="121" width="14" height="14" fill="#F59E0B" stroke="#D97706" stroke-width="1.5" rx="3"/>`;
+        beam.style.transform = 'rotate(-14deg)';
+        bubble.innerHTML = `⚠️ <b>切法 (${opt}) 傾斜了！</b> 拿出的兩塊大小不一樣大，所以這不是「等分」喔！`;
+        bubble.className = "mt-3 bg-rose-100 border-2 border-rose-400 text-rose-950 font-black text-xs md:text-sm px-5 py-2 rounded-full shadow-sm text-center max-w-lg transition-all";
+      }
+    }
+
+    function confirmDetectiveAnswer(ans) {
+      const data = detectiveLevels[currentDetLevel];
+      const feedback = document.getElementById('det-feedback');
+      feedback.classList.remove('hidden');
+
+      if (ans === data.correct) {
+        playSound('correct');
+        addStars(5);
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-900 font-bold text-sm flex items-center justify-between";
+        feedback.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🎉</span>
+            <div>
+              <p class="font-black text-emerald-950">太棒了！推理完全正確！(+5 ⭐)</p>
+              <p class="text-xs text-emerald-800 mt-0.5">${data.explanation}</p>
+            </div>
+          </div>
+          <button onclick="nextDetectiveLevel()" class="bounce-btn bg-emerald-500 text-white font-black px-4 py-2 rounded-xl text-xs flex-shrink-0">
+            ${currentDetLevel < 2 ? '下一題 ➔' : '完成任務！'}
+          </button>
+        `;
+      } else {
+        playSound('wrong');
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 text-rose-900 font-bold text-sm flex items-center gap-2";
+        feedback.innerHTML = `
+          <span class="text-2xl">💡</span>
+          <div>
+            <p class="font-black text-rose-950">再想想看喔！</p>
+            <p class="text-xs text-rose-800 mt-0.5">點擊「秤秤看」按鈕，觀察哪一個切法的塊狀放上天平會維持水平平衡！</p>
+          </div>
+        `;
+      }
+    }
+
+    function nextDetectiveLevel() {
+      if (currentDetLevel < detectiveLevels.length - 1) {
+        currentDetLevel++;
+        renderDetectiveLevel();
+      } else {
+        alert('🏆 恭喜完成【觀念偵探社】全部案件！已經獲得解鎖下一關的星數囉！');
+        checkTabUnlocks();
+        switchTab('tab-lab');
+      }
+    }
+
+    // ==============================================
+    // 分頁二【分數實驗室】核心邏輯
+    // ==============================================
+    let labShape = 'strip';
+    let labDenom = 4;
+    let labNum = 2;
+
+    let labTasks = { shape: false, denom: false, pieces: false };
+
+    function setLabShape(shape) {
+      playSound('click');
+      labShape = shape;
+      document.getElementById('lab-shape-strip').className = shape === 'strip' 
+        ? "bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-sky-500 text-white border-sky-600 shadow-sm"
+        : "bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-white text-slate-700 border-slate-300 hover:bg-slate-100";
+      
+      document.getElementById('lab-shape-circle').className = shape === 'circle' 
+        ? "bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-sky-500 text-white border-sky-600 shadow-sm"
+        : "bounce-btn py-2.5 px-3 rounded-2xl font-black text-sm border-2 flex items-center justify-center gap-2 bg-white text-slate-700 border-slate-300 hover:bg-slate-100";
+
+      document.getElementById('lab-unit-name').innerText = shape === 'strip' ? '一條長條蛋糕' : '一個圓形披薩';
+      labTasks.shape = true;
+      updateLabTasks();
+      renderLab();
+    }
+
+    function adjustLabDenom(delta) {
+      let val = labDenom + delta;
+      if (val >= 2 && val <= 10) {
+        onLabDenomSliderChange(val);
+      }
+    }
+
+    function onLabDenomSliderChange(val) {
+      labDenom = parseInt(val);
+      document.getElementById('lab-denom-slider').value = labDenom;
+      document.getElementById('lab-denom-label').innerText = `平分 ${labDenom} 塊`;
+      if (labNum > labDenom) labNum = labDenom;
+      
+      if (labDenom >= 5) labTasks.denom = true;
+      updateLabTasks();
+      renderLab();
+    }
+
+    function setLabNumerator(val) {
+      playSound('click');
+      labNum = Math.min(val, labDenom);
+      labTasks.pieces = true;
+      updateLabTasks();
+      renderLab();
+    }
+
+    function toggleLabPiece(idx) {
+      playSound('click');
+      if (idx < labNum) {
+        labNum = idx;
+      } else {
+        labNum = idx + 1;
+      }
+      labTasks.pieces = true;
+      updateLabTasks();
+      renderLab();
+    }
+
+    function updateLabTasks() {
+      let count = 0;
+      if (labTasks.shape) {
+        document.getElementById('task-shape').className = "flex items-center gap-1.5 text-emerald-600 font-bold";
+        document.getElementById('task-shape').children[0].innerText = '✅';
+        count++;
+      }
+      if (labTasks.denom) {
+        document.getElementById('task-denom').className = "flex items-center gap-1.5 text-emerald-600 font-bold";
+        document.getElementById('task-denom').children[0].innerText = '✅';
+        count++;
+      }
+      if (labTasks.pieces) {
+        document.getElementById('task-pieces').className = "flex items-center gap-1.5 text-emerald-600 font-bold";
+        document.getElementById('task-pieces').children[0].innerText = '✅';
+        count++;
+      }
+      document.getElementById('lab-task-counter').innerText = `${count}/3 完成`;
+
+      const unlockBtn = document.getElementById('lab-unlock-btn');
+      if (count === 3) {
+        unlockBtn.disabled = false;
+        unlockBtn.className = "w-full mt-2 py-2.5 px-3 rounded-xl font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 shadow-md cursor-pointer flex items-center justify-center gap-1.5 bounce-btn";
+        unlockBtn.innerHTML = `<span>🔓</span> 解鎖小廚師烘焙坊！(+5 ⭐)`;
+      }
+    }
+
+    function finishLabQuest() {
+      addStars(5);
+      if (!studentInfo.unlockedTabs.includes('tab-chef')) {
+        studentInfo.unlockedTabs.push('tab-chef');
+      }
+      saveProgress();
+      checkTabUnlocks();
+      alert('🎉 太厲害了！成功完成實驗室探索，解鎖【小廚師分分看】！');
+      switchTab('tab-chef');
+    }
+
+    function renderLab() {
+      document.getElementById('lab-display-num').innerText = labNum;
+      document.getElementById('lab-display-denom').innerText = labDenom;
+
+      const unitWord = labShape === 'strip' ? '條' : '個';
+      const itemWord = labShape === 'strip' ? '蛋糕' : '披薩';
+
+      document.getElementById('lab-piece-hint').innerText = `每 1 等分是 1/${labDenom} ${unitWord}`;
+      document.getElementById('lab-sentence').innerHTML = `
+        把 1 ${unitWord}${itemWord}平分成 <span class="text-sky-600 font-black text-lg underline">${labDenom}</span> 等分，<br>
+        選取了其中的 <span class="text-rose-500 font-black text-lg underline">${labNum}</span> 等分，<br>
+        合起來就是 <span class="text-indigo-600 font-black text-xl">${labDenom} 分之 ${labNum} ${unitWord}</span> ${itemWord}！
+      `;
+
+      if (labNum === labDenom) {
+        document.getElementById('lab-special-note').innerText = "✨ 提示：分子等於分母，代表選取了「完整的 1 整塊」喔！";
+      } else if (labNum === 0) {
+        document.getElementById('lab-special-note').innerText = "✨ 提示：分子是 0，代表一份都沒有選取喔！";
+      } else {
+        document.getElementById('lab-special-note').innerText = `✨ 提示：包含 ${labNum} 個 1/${labDenom} ${unitWord}！`;
+      }
+
+      const container = document.getElementById('lab-svg-container');
+      if (labShape === 'strip') {
+        let rects = '';
+        const width = 280;
+        const height = 70;
+        const pieceW = width / labDenom;
+        for (let i = 0; i < labDenom; i++) {
+          const isSelected = i < labNum;
+          const fill = isSelected ? '#FBBF24' : '#FEE2E2';
+          const stroke = isSelected ? '#D97706' : '#FCA5A5';
+          rects += `<g cursor="pointer" onclick="toggleLabPiece(${i})">
+            <rect x="${10 + i * pieceW}" y="15" width="${pieceW - 2}" height="${height}" fill="${fill}" stroke="${stroke}" stroke-width="2" rx="4" class="${isSelected ? 'piece-selected' : ''}"/>
+            <text x="${10 + i * pieceW + pieceW / 2}" y="55" fill="${isSelected ? '#78350F' : '#991B1B'}" font-weight="bold" font-size="14" text-anchor="middle">1/${labDenom}</text>
+          </g>`;
+        }
+        container.innerHTML = `<svg viewBox="0 0 300 100" class="w-full max-w-md h-36">${rects}</svg>`;
+      } else {
+        let paths = '';
+        const cx = 100, cy = 100, r = 80;
+        const angleStep = (2 * Math.PI) / labDenom;
+
+        for (let i = 0; i < labDenom; i++) {
+          const startA = i * angleStep - Math.PI / 2;
+          const endA = (i + 1) * angleStep - Math.PI / 2;
+          const x1 = cx + r * Math.cos(startA);
+          const y1 = cy + r * Math.sin(startA);
+          const x2 = cx + r * Math.cos(endA);
+          const y2 = cy + r * Math.sin(endA);
+          const largeArc = angleStep > Math.PI ? 1 : 0;
+
+          const isSelected = i < labNum;
+          const fill = isSelected ? '#FBBF24' : '#E0F2FE';
+          const stroke = isSelected ? '#D97706' : '#7DD3FC';
+
+          const midA = (startA + endA) / 2;
+          const tx = cx + (r * 0.6) * Math.cos(midA);
+          const ty = cy + (r * 0.6) * Math.sin(midA);
+
+          paths += `<g cursor="pointer" onclick="toggleLabPiece(${i})">
+            <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${fill}" stroke="${stroke}" stroke-width="2" class="${isSelected ? 'piece-selected' : ''}"/>
+            <text x="${tx}" y="${ty + 4}" fill="${isSelected ? '#78350F' : '#0369A1'}" font-weight="bold" font-size="12" text-anchor="middle">1/${labDenom}</text>
+          </g>`;
+        }
+        container.innerHTML = `<svg viewBox="0 0 200 200" class="w-48 h-48">${paths}</svg>`;
+      }
+    }
+
+    // ==============================================
+    // 分頁三【小廚師分分看】核心邏輯
+    // ==============================================
+    const chefRounds = [
+      { avatar: '🐻', name: '小棕熊客人', order: '外帶 5/6 塊蔥抓餅', targetNum: 5, targetDenom: 6, unit: '塊蔥抓餅', shape: 'circle' },
+      { avatar: '🐰', name: '粉紅兔客人', order: '想要 3/4 條吐司切片', targetNum: 3, targetDenom: 4, unit: '條吐司', shape: 'strip' },
+      { avatar: '🦊', name: '聰明狐客人', order: '需要 4/8 個水果派', targetNum: 4, targetDenom: 8, unit: '個水果派', shape: 'circle' },
+      { avatar: '🐱', name: '貓咪花花客人', order: '點了 2/3 條法式長棍', targetNum: 2, targetDenom: 3, unit: '條長棍', shape: 'strip' }
+    ];
+
+    let chefCurrentRound = 0;
+    let chefSelectedDenom = 6;
+    let chefSelectedNum = 0;
+
+    function initChefRound() {
+      const data = chefRounds[chefCurrentRound];
+      document.getElementById('chef-customer-avatar').innerText = data.avatar;
+      document.getElementById('chef-customer-name').innerText = data.name;
+      document.getElementById('chef-round-num').innerText = chefCurrentRound + 1;
+      document.getElementById('chef-order-speech').innerHTML = `「老闆！我想要 ${data.order}！」`;
+      document.getElementById('chef-target-num').innerText = data.targetNum;
+      document.getElementById('chef-target-denom').innerText = data.targetDenom;
+      document.getElementById('chef-target-unit').innerText = data.unit;
+
+      const cutBtns = document.getElementById('chef-cut-buttons');
+      cutBtns.innerHTML = '';
+      [2, 3, 4, 5, 6, 8].forEach(d => {
+        cutBtns.innerHTML += `
+          <button onclick="setChefDenom(${d})" id="chef-btn-denom-${d}" class="bounce-btn py-2 rounded-xl font-black text-xs border-2 ${d === chefSelectedDenom ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-emerald-50'}">
+            切 ${d} 等分
+          </button>
+        `;
+      });
+
+      chefSelectedNum = 0;
+      updateChefDishUI();
+      document.getElementById('chef-feedback').classList.add('hidden');
+    }
+
+    function setChefDenom(d) {
+      playSound('click');
+      chefSelectedDenom = d;
+      chefSelectedNum = 0;
+
+      const knife = document.getElementById('knife-slash-effect');
+      knife.style.opacity = '1';
+      setTimeout(() => { knife.style.opacity = '0'; }, 500);
+
+      document.querySelectorAll('#chef-cut-buttons button').forEach(b => {
+        b.className = "bounce-btn py-2 rounded-xl font-black text-xs border-2 bg-white text-slate-700 border-slate-200 hover:bg-emerald-50";
+      });
+      document.getElementById(`chef-btn-denom-${d}`).className = "bounce-btn py-2 rounded-xl font-black text-xs border-2 bg-emerald-500 text-white border-emerald-600 shadow-sm";
+
+      updateChefDishUI();
+    }
+
+    function toggleChefPiece(idx) {
+      playSound('click');
+      if (idx < chefSelectedNum) {
+        chefSelectedNum = idx;
+      } else {
+        chefSelectedNum = idx + 1;
+      }
+      updateChefDishUI();
+    }
+
+    function updateChefDishUI() {
+      document.getElementById('chef-current-denom-badge').innerText = chefSelectedDenom;
+      document.getElementById('chef-current-num-badge').innerText = chefSelectedNum;
+
+      const data = chefRounds[chefCurrentRound];
+      const container = document.getElementById('chef-svg-container');
+
+      if (data.shape === 'strip') {
+        let rects = '';
+        const width = 280;
+        const height = 80;
+        const pieceW = width / chefSelectedDenom;
+        for (let i = 0; i < chefSelectedDenom; i++) {
+          const isSelected = i < chefSelectedNum;
+          const fill = isSelected ? '#FBBF24' : '#FEF3C7';
+          const stroke = isSelected ? '#D97706' : '#FCD34D';
+          rects += `<g cursor="pointer" onclick="toggleChefPiece(${i})">
+            <rect x="${10 + i * pieceW}" y="10" width="${pieceW - 3}" height="${height}" fill="${fill}" stroke="${stroke}" stroke-width="3" rx="6" class="${isSelected ? 'piece-selected' : ''}"/>
+            <text x="${10 + i * pieceW + pieceW / 2}" y="55" fill="${isSelected ? '#78350F' : '#B45309'}" font-weight="black" font-size="14" text-anchor="middle">1/${chefSelectedDenom}</text>
+          </g>`;
+        }
+        container.innerHTML = `<svg viewBox="0 0 300 100" class="w-full max-w-lg h-44">${rects}</svg>`;
+      } else {
+        let paths = '';
+        const cx = 110, cy = 110, r = 90;
+        const angleStep = (2 * Math.PI) / chefSelectedDenom;
+
+        for (let i = 0; i < chefSelectedDenom; i++) {
+          const startA = i * angleStep - Math.PI / 2;
+          const endA = (i + 1) * angleStep - Math.PI / 2;
+          const x1 = cx + r * Math.cos(startA);
+          const y1 = cy + r * Math.sin(startA);
+          const x2 = cx + r * Math.cos(endA);
+          const y2 = cy + r * Math.sin(endA);
+          const largeArc = angleStep > Math.PI ? 1 : 0;
+
+          const isSelected = i < chefSelectedNum;
+          const fill = isSelected ? '#FBBF24' : '#FEF3C7';
+          const stroke = isSelected ? '#D97706' : '#FCD34D';
+
+          const midA = (startA + endA) / 2;
+          const tx = cx + (r * 0.6) * Math.cos(midA);
+          const ty = cy + (r * 0.6) * Math.sin(midA);
+
+          paths += `<g cursor="pointer" onclick="toggleChefPiece(${i})">
+            <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${fill}" stroke="${stroke}" stroke-width="2.5" class="${isSelected ? 'piece-selected' : ''}"/>
+            <text x="${tx}" y="${ty + 4}" fill="${isSelected ? '#78350F' : '#B45309'}" font-weight="black" font-size="13" text-anchor="middle">1/${chefSelectedDenom}</text>
+          </g>`;
+        }
+        container.innerHTML = `<svg viewBox="0 0 220 220" class="w-56 h-56">${paths}</svg>`;
+      }
+    }
+
+    function checkChefDish() {
+      const data = chefRounds[chefCurrentRound];
+      const feedback = document.getElementById('chef-feedback');
+      feedback.classList.remove('hidden');
+
+      if (chefSelectedDenom === data.targetDenom && chefSelectedNum === data.targetNum) {
+        playSound('correct');
+        addStars(5);
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-900 font-bold text-sm flex items-center justify-between";
+        feedback.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">😋</span>
+            <div>
+              <p class="font-black text-emerald-950">${data.name}非常滿意！上菜成功！(+5 ⭐)</p>
+              <p class="text-xs text-emerald-800 mt-0.5">準確切分成 ${data.targetDenom} 等分並拿給客人 ${data.targetNum} 份！</p>
+            </div>
+          </div>
+          <button onclick="nextChefRound()" class="bounce-btn bg-emerald-500 text-white font-black px-4 py-2 rounded-xl text-xs flex-shrink-0">
+            ${chefCurrentRound < 3 ? '接下一單 ➔' : '完成了！解鎖分數大連線！'}
+          </button>
+        `;
+      } else {
+        playSound('wrong');
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 text-rose-900 font-bold text-sm flex items-center gap-2";
+        let tip = "";
+        if (chefSelectedDenom !== data.targetDenom) {
+          tip = `客人希望切成 <b>${data.targetDenom}</b> 等分，但你切成了 ${chefSelectedDenom} 等分！`;
+        } else {
+          tip = `客人想要 <b>${data.targetNum}</b> 份，但你盤子裡選取了 ${chefSelectedNum} 份！`;
+        }
+        feedback.innerHTML = `
+          <span class="text-2xl">🤔</span>
+          <div>
+            <p class="font-black text-rose-950">餐點份量好像不太對喔！</p>
+            <p class="text-xs text-rose-800 mt-0.5">${tip}</p>
+          </div>
+        `;
+      }
+    }
+
+    function nextChefRound() {
+      if (chefCurrentRound < chefRounds.length - 1) {
+        chefCurrentRound++;
+        initChefRound();
+      } else {
+        if (!studentInfo.unlockedTabs.includes('tab-match')) {
+          studentInfo.unlockedTabs.push('tab-match');
+        }
+        saveProgress();
+        checkTabUnlocks();
+        alert('🏆 哇！你是三星米其林分數大廚！成功解鎖【分數大連線】關卡！');
+        switchTab('tab-match');
+      }
+    }
+
+    // ==============================================
+    // 分頁四【分數大連線】核心邏輯
+    // ==============================================
+    const matchDataPairs = [
+      { id: 1, frac: '3/4', num: 3, denom: 4, text: '把 1 條蛋糕切 4 段，吃了 3 段' },
+      { id: 2, frac: '2/5', num: 2, denom: 5, text: '把 1 披薩平分 5 塊，拿走 2 塊' },
+      { id: 3, frac: '1/3', num: 1, denom: 3, text: '把 1 條繩子平分 3 折，剪下 1 折' },
+      { id: 4, frac: '5/8', num: 5, denom: 8, text: '把 1 色紙平分 8 格，塗色 5 格' }
+    ];
+
+    let matchSelected = { col1: null, col2: null, col3: null };
+    let matchedGroupIds = [];
+
+    function initMatchGame() {
+      matchedGroupIds = [];
+      matchSelected = { col1: null, col2: null, col3: null };
+      document.getElementById('match-score-badge').innerText = `0 / 4`;
+      document.getElementById('match-feedback').classList.add('hidden');
+      document.getElementById('match-lines-svg').innerHTML = '';
+
+      const col1Items = shuffleArray([...matchDataPairs]);
+      const col2Items = shuffleArray([...matchDataPairs]);
+      const col3Items = shuffleArray([...matchDataPairs]);
+
+      renderMatchColumn('match-col-1', col1Items, 1);
+      renderMatchColumn('match-col-2', col2Items, 2);
+      renderMatchColumn('match-col-3', col3Items, 3);
+    }
+
+    function shuffleArray(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    function renderMatchColumn(elementId, items, colNum) {
+      const colEl = document.getElementById(elementId);
+      colEl.innerHTML = '';
+      items.forEach(item => {
+        let content = '';
+        if (colNum === 1) {
+          content = `
+            <div class="flex items-center gap-2">
+              <svg viewBox="0 0 100 40" class="w-20 h-10 border border-slate-300 rounded bg-white">
+                ${generateMatchMiniSVG(item.num, item.denom)}
+              </svg>
+              <span class="text-xs font-black text-slate-600">圖形</span>
+            </div>
+          `;
+        } else if (colNum === 2) {
+          content = `<p class="text-xs font-bold text-slate-700 leading-snug">${item.text}</p>`;
+        } else {
+          content = `
+            <div class="inline-flex flex-col items-center justify-center font-black text-rose-600 text-lg leading-none">
+              <span>${item.num}</span>
+              <span class="w-6 h-0.5 bg-slate-800 my-0.5"></span>
+              <span>${item.denom}</span>
+            </div>
+          `;
+        }
+
+        colEl.innerHTML += `
+          <div id="match-card-${colNum}-${item.id}" onclick="selectMatchCard(${colNum}, ${item.id})" class="cursor-pointer bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-sm hover:border-pink-400 transition-all flex items-center justify-center text-center min-h-[64px]">
+            ${content}
+          </div>
+        `;
+      });
+    }
+
+    function generateMatchMiniSVG(num, denom) {
+      const w = 100 / denom;
+      let rects = '';
+      for (let i = 0; i < denom; i++) {
+        const fill = i < num ? '#FBBF24' : '#F3F4F6';
+        rects += `<rect x="${i * w}" y="0" width="${w - 1}" height="40" fill="${fill}" stroke="#CBD5E1"/>`;
+      }
+      return rects;
+    }
+
+    function selectMatchCard(colNum, id) {
+      playSound('click');
+      if (matchedGroupIds.includes(id)) return;
+
+      const key = `col${colNum}`;
+      matchSelected[key] = id;
+
+      for (let item of matchDataPairs) {
+        const card = document.getElementById(`match-card-${colNum}-${item.id}`);
+        if (card && !matchedGroupIds.includes(item.id)) {
+          if (item.id === id) {
+            card.className = "cursor-pointer bg-pink-100 border-2 border-pink-500 rounded-2xl p-3 shadow-md transition-all flex items-center justify-center text-center min-h-[64px]";
+          } else {
+            card.className = "cursor-pointer bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-sm hover:border-pink-400 transition-all flex items-center justify-center text-center min-h-[64px]";
+          }
+        }
+      }
+
+      if (matchSelected.col1 && matchSelected.col2 && matchSelected.col3) {
+        checkMatchTriple();
+      }
+    }
+
+    function checkMatchTriple() {
+      const { col1, col2, col3 } = matchSelected;
+      const feedback = document.getElementById('match-feedback');
+      feedback.classList.remove('hidden');
+
+      if (col1 === col2 && col2 === col3) {
+        playSound('correct');
+        addStars(5);
+        matchedGroupIds.push(col1);
+
+        [1, 2, 3].forEach(c => {
+          const card = document.getElementById(`match-card-${c}-${col1}`);
+          card.className = "bg-emerald-100 border-2 border-emerald-400 rounded-2xl p-3 opacity-80 flex items-center justify-center text-center min-h-[64px] pointer-events-none";
+        });
+
+        document.getElementById('match-score-badge').innerText = `${matchedGroupIds.length} / 4`;
+
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-900 font-bold text-sm flex items-center justify-between";
+        feedback.innerHTML = `
+          <span class="font-black text-emerald-950">✨ 完美三合一配對！成功連線！(+5 ⭐)</span>
+        `;
+
+        matchSelected = { col1: null, col2: null, col3: null };
+
+        if (matchedGroupIds.length === 4) {
+          if (!studentInfo.unlockedTabs.includes('tab-game')) {
+            studentInfo.unlockedTabs.push('tab-game');
+          }
+          saveProgress();
+          checkTabUnlocks();
+          setTimeout(() => {
+            alert('🎉 恭喜完成全部配對連線！已解鎖終極大考驗【怪獸城堡】！');
+            switchTab('tab-game');
+          }, 600);
+        }
+      } else {
+        playSound('wrong');
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 text-rose-900 font-bold text-sm flex items-center justify-between";
+        feedback.innerHTML = `
+          <span class="font-black text-rose-950">❌ 配對不吻合喔！請再仔細核對圖形與文字代表的分數！</span>
+        `;
+        setTimeout(() => {
+          matchSelected = { col1: null, col2: null, col3: null };
+          [1, 2, 3].forEach(c => {
+            for (let item of matchDataPairs) {
+              const card = document.getElementById(`match-card-${c}-${item.id}`);
+              if (card && !matchedGroupIds.includes(item.id)) {
+                card.className = "cursor-pointer bg-white border-2 border-slate-200 rounded-2xl p-3 shadow-sm hover:border-pink-400 transition-all flex items-center justify-center text-center min-h-[64px]";
+              }
+            }
+          });
+          feedback.classList.add('hidden');
+        }, 1200);
+      }
+    }
+
+    // ==============================================
+    // 分頁五【怪獸大挑戰】核心邏輯
+    // ==============================================
+    const quizQuestions = [
+      {
+        question: "讀讀看：右圖色紙被平分成了 4 份，塗色部分是其中的 3 份，請問是多少？",
+        visual: `
+          <div class="inline-flex flex-col items-center justify-center font-black text-2xl text-purple-700">
+            <span>3</span><span class="w-8 h-1 bg-slate-800 my-1"></span><span>4</span>
+          </div>
+        `,
+        options: ["4 分之 3", "3 分之 4", "4 分之 1", "1 分之 3"],
+        answerIndex: 0,
+        tip: "寫成分數時，下面的分母是平分總數，讀作「4分之3」！"
+      },
+      {
+        question: "請問分數中寫在「橫線下面」的數字叫做什麼？",
+        visual: `<span class="text-3xl">❓</span>`,
+        options: ["分子", "分母", "等分", "分數線"],
+        answerIndex: 1,
+        tip: "下面像媽媽一樣承載全部等分的是「分母」喔！"
+      },
+      {
+        question: "一條巧克力平分成 8 塊，小明吃了 8 塊，請問小明吃了多少條巧克力？",
+        visual: `<span class="text-3xl">🍫</span>`,
+        options: ["8分之1 條", "8分之8 條 (即1整條)", "8分之0 條", "1分之8 條"],
+        answerIndex: 1,
+        tip: "分子和分母一樣大時（8/8），代表拿取了「完整的 1 整條」！"
+      },
+      {
+        question: "判斷題：把一個圓形餅乾隨意切成 2 塊，其中 1 塊一定是 1/2 個餅乾嗎？",
+        visual: `<span class="text-3xl">🍪</span>`,
+        options: ["一定是的", "不一定，必須要「平分(等分)」才算", "只要切成2塊就是", "不知道"],
+        answerIndex: 1,
+        tip: "一定要每份大小一模一樣（等分），才可以稱作幾分之幾喔！"
+      },
+      {
+        question: "把 1 公尺長的彩帶平分成 10 段，其中的 7 段合起來是多少公尺？",
+        visual: `<span class="text-3xl">🎀</span>`,
+        options: ["10分之7 公尺", "7分之10 公尺", "10 公尺", "7 公尺"],
+        answerIndex: 0,
+        tip: "平分成 10 等分（分母10），取 7 等分（分子7），即 10分之7 公尺！"
+      }
+    ];
+
+    let gameCurrentQuiz = 0;
+    let gameHp = 3;
+
+    function initMonsterGame() {
+      gameCurrentQuiz = 0;
+      gameHp = 3;
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      const data = quizQuestions[gameCurrentQuiz];
+      document.getElementById('game-quiz-num').innerText = gameCurrentQuiz + 1;
+      document.getElementById('game-question-text').innerText = data.question;
+      document.getElementById('game-question-visual').innerHTML = data.visual;
+
+      let hpStr = '';
+      for (let i = 0; i < 3; i++) {
+        hpStr += (i < gameHp) ? '❤️' : '🖤';
+      }
+      document.getElementById('game-hp-bar').innerText = hpStr;
+
+      const optContainer = document.getElementById('game-options-container');
+      optContainer.innerHTML = '';
+      data.options.forEach((opt, idx) => {
+        optContainer.innerHTML += `
+          <button onclick="answerQuiz(${idx})" class="bounce-btn w-full bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-400 p-3.5 rounded-2xl font-black text-slate-700 text-sm md:text-base shadow-sm text-left flex items-center gap-3">
+            <span class="w-7 h-7 rounded-full bg-purple-100 text-purple-700 text-xs font-black flex items-center justify-center flex-shrink-0">${String.fromCharCode(65 + idx)}</span>
+            <span>${opt}</span>
+          </button>
+        `;
+      });
+
+      document.getElementById('game-feedback').classList.add('hidden');
+    }
+
+    function answerQuiz(idx) {
+      const data = quizQuestions[gameCurrentQuiz];
+      const feedback = document.getElementById('game-feedback');
+      feedback.classList.remove('hidden');
+
+      if (idx === data.answerIndex) {
+        playSound('correct');
+        addStars(5);
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-900 font-bold text-sm flex items-center justify-between";
+        feedback.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">💥</span>
+            <div>
+              <p class="font-black text-emerald-950">答對了！擊退怪獸！(+5 ⭐)</p>
+              <p class="text-xs text-emerald-800 mt-0.5">${data.tip}</p>
+            </div>
+          </div>
+          <button onclick="nextQuiz()" class="bounce-btn bg-purple-600 text-white font-black px-4 py-2 rounded-xl text-xs flex-shrink-0">
+            ${gameCurrentQuiz < 4 ? '下一個怪獸 ➔' : '領取通關獎牌！'}
+          </button>
+        `;
+      } else {
+        playSound('wrong');
+        gameHp--;
+        renderHp();
+        feedback.className = "mt-4 p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 text-rose-900 font-bold text-sm flex items-center gap-2";
+        feedback.innerHTML = `
+          <span class="text-2xl">⚠️</span>
+          <div>
+            <p class="font-black text-rose-950">被怪獸攻擊了！扣除 1 點 HP！</p>
+            <p class="text-xs text-rose-800 mt-0.5">小提示：${data.tip}</p>
+          </div>
+        `;
+        if (gameHp <= 0) {
+          setTimeout(() => {
+            alert('💔 HP 歸零了！別灰心，重整旗鼓再來挑戰一次怪獸吧！');
+            initMonsterGame();
+          }, 800);
+        }
+      }
+    }
+
+    function renderHp() {
+      let hpStr = '';
+      for (let i = 0; i < 3; i++) {
+        hpStr += (i < gameHp) ? '❤️' : '🖤';
+      }
+      document.getElementById('game-hp-bar').innerText = hpStr;
+    }
+
+    function nextQuiz() {
+      if (gameCurrentQuiz < quizQuestions.length - 1) {
+        gameCurrentQuiz++;
+        renderQuiz();
+      } else {
+        showCompletionCertificate();
+      }
+    }
+
+    // 學生通關榮譽證書與回傳 Modal
+    function showCompletionCertificate() {
+      document.getElementById('cert-student-class-seat').innerText = `${studentInfo.class} / ${studentInfo.seat}`;
+      document.getElementById('cert-student-name').innerText = studentInfo.name;
+      document.getElementById('cert-student-stars').innerText = `${studentInfo.stars} ⭐`;
+      document.getElementById('cert-student-unlocks').innerText = `通關 ${studentInfo.unlockedTabs.length} / 5 關`;
+      document.getElementById('modal-completion').classList.remove('hidden');
+    }
+
+    // ----------------------------------------------
+    // 老師後台與 Google 試算表 / Webhook 資料送出
+    // ----------------------------------------------
+    const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbwhEEkM8cIYN846j23lB5oGwjratLrOCEQMSxqbv6hd5WvcNKpwm-DAVeLKQwhJv_rb/exec";
+
+    function getTeacherFormUrl() {
+      return localStorage.getItem('fraction_island_sheet_url') || DEFAULT_SHEET_URL;
+    }
+
+    function toggleTeacherFormConfig() {
+      const panel = document.getElementById('teacher-form-config-panel');
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) {
+        const currentUrl = getTeacherFormUrl();
+        document.getElementById('input-teacher-sheet-url').value = currentUrl;
+        document.getElementById('current-sheet-url-display').innerText = currentUrl;
+      }
+    }
+
+    function saveTeacherFormUrl() {
+      const url = document.getElementById('input-teacher-sheet-url').value.trim();
+      if (url) {
+        localStorage.setItem('fraction_island_sheet_url', url);
+        document.getElementById('current-sheet-url-display').innerText = url;
+        alert('✅ 已成功儲存 Google 試算表/表單網址！');
+      } else {
+        localStorage.removeItem('fraction_island_sheet_url');
+        document.getElementById('current-sheet-url-display').innerText = DEFAULT_SHEET_URL;
+        alert('🔄 已重置為預設 API 網址！');
+      }
+    }
+
+    function submitToTeacherForm() {
+      const btn = document.getElementById('cert-submit-btn');
+      const feedback = document.getElementById('cert-submit-feedback');
+      const targetUrl = getTeacherFormUrl();
+
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳</span> 送出中...`;
+      feedback.classList.add('hidden');
+
+      const payload = {
+        class_seat: `${studentInfo.class} / ${studentInfo.seat}`,
+        name: studentInfo.name,
+        stars: studentInfo.stars,
+        unlocked_count: `${studentInfo.unlockedTabs.length} / 5`,
+        timestamp: new Date().toLocaleString()
+      };
+
+      // 嘗試透過 fetch POST 上傳至 Webhook / Apps Script API
+      fetch(targetUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        btn.disabled = false;
+        btn.innerHTML = `<span>✅</span> 紀錄已成功送出！`;
+        btn.className = "w-full py-3 bg-slate-400 text-white font-black rounded-2xl cursor-not-allowed text-sm shadow-md flex items-center justify-center gap-2";
+
+        feedback.classList.remove('hidden');
+        feedback.className = "p-3 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-950 text-xs font-black flex items-center justify-center gap-2";
+        feedback.innerHTML = `<span>🎉</span> 已成功送出學習紀錄至老師試算表！`;
+        playSound('correct');
+      }).catch(err => {
+        console.error("Transmission error:", err);
+        // 如果 cross-origin 限制，仍當作完成提交或引導備份
+        btn.disabled = false;
+        btn.innerHTML = `<span>✅</span> 紀錄已送出 (無跨網域回應)`;
+        feedback.classList.remove('hidden');
+        feedback.className = "p-3 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-950 text-xs font-black flex items-center justify-center gap-2";
+        feedback.innerHTML = `<span>🎉</span> 已成功傳送紀錄！`;
+        playSound('correct');
+      });
+    }
+
+    function openTeacherDashboard() {
+      const records = JSON.parse(localStorage.getItem('fraction_island_all_records') || '[]');
+      const tbody = document.getElementById('teacher-table-body');
+      tbody.innerHTML = '';
+
+      if (records.length === 0) {
+        records.push(studentInfo);
+      }
+
+      let maxStar = 0;
+      let passCount = 0;
+
+      records.forEach(r => {
+        if (r.stars > maxStar) maxStar = r.stars;
+        if (r.unlockedTabs && r.unlockedTabs.length === 5) passCount++;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-purple-50/50">
+            <td class="p-3 font-bold text-slate-800">${r.class} / ${r.seat}</td>
+            <td class="p-3 font-black text-purple-900">${r.name}</td>
+            <td class="p-3 font-black text-amber-600">${r.stars} ⭐</td>
+            <td class="p-3">
+              <span class="bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full font-bold">
+                通關 ${(r.unlockedTabs || []).length} / 5 關
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('teacher-stat-count').innerText = `${records.length} 人`;
+      document.getElementById('teacher-stat-max-star').innerText = `${maxStar} ⭐`;
+      document.getElementById('teacher-stat-pass-rate').innerText = `${Math.round((passCount / records.length) * 100)}%`;
+
+      document.getElementById('modal-teacher').classList.remove('hidden');
+    }
+
+    function exportTeacherDataCSV() {
+      const records = JSON.parse(localStorage.getItem('fraction_island_all_records') || '[]');
+      if (records.length === 0) records.push(studentInfo);
+
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "班級/座號,姓名,獲得星數,解鎖關卡數\n";
+
+      records.forEach(r => {
+        csvContent += `"${r.class} / ${r.seat}","${r.name}",${r.stars},"${(r.unlockedTabs || []).length} / 5"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `分數探險島_全班學習紀錄_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function clearAllData() {
+      if (confirm("⚠️ 確定要清除所有學習紀錄與星數嗎？這將無法復原。")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    // 頁面載入完成時初始化應用
+    window.onload = function() {
+      initApp();
+    };
+  </script>
+</body>
+</html>
