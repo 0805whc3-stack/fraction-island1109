@@ -835,9 +835,10 @@
       if (saved) {
         studentInfo = JSON.parse(saved);
         updateStudentHeader();
-      } else {
-        openStudentLoginModal(true);
       }
+      // 保持一開啟網頁就先跳出填寫學生資料 Modal（強制填寫）
+      openStudentLoginModal(true);
+
       checkTabUnlocks();
       renderDetectiveLevel();
       renderLab();
