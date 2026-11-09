@@ -923,11 +923,16 @@
         const iconSpan = document.getElementById(t.icon);
         const isUnlocked = studentInfo.unlockedTabs.includes(t.id);
 
-        if (isUnlocked) {
-          btn.classList.remove('opacity-60', 'bg-slate-100', 'text-slate-400', 'border-slate-200');
+      if (isUnlocked) {
+        btn.classList.remove('opacity-60', 'bg-slate-100', 'text-slate-400', 'border-slate-200');
+
+        // 加入判斷：如果不是目前正在停留的關卡（沒有藍底），才加上未選取的白底灰字樣式
+        if (!btn.classList.contains('bg-sky-500')) {
           btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
-          iconSpan.innerText = t.defaultIcon;
-        } else {
+        }
+      
+        iconSpan.innerText = t.defaultIcon;
+      } else {
           btn.classList.add('opacity-60', 'bg-slate-100', 'text-slate-400', 'border-slate-200');
           iconSpan.innerText = '🔒';
         }
